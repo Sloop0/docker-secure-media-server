@@ -1,0 +1,13 @@
+.env
+Pihole/
+config/data/
+config/ddclient/ddclient.conf
+heimdall/
+nzbget/
+nzbhydra2/
+ombi/
+plex/
+radarr/
+sonarr/
+vpn/
+config/traefik/certs/

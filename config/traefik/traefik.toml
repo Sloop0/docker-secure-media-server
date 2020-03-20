@@ -1,0 +1,23 @@
+[log]
+  level = "ERROR"
+
+#[accessLog]
+  
+#[serversTransport]
+#  insecureSkipVerify = true
+
+[entryPoints]
+  [entryPoints.web]
+    address = ":80"
+  [entryPoints.websecure]
+    address = ":443"
+    
+[api]
+  dashboard = true
+
+[providers]
+  [providers.docker]
+	exposedByDefault = false
+  [providers.file]
+    directory = "/dynamicconf"
+    watch = true
