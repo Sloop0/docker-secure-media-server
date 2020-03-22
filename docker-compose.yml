@@ -33,16 +33,17 @@ services:
   nzbget:
     image: linuxserver/nzbget:latest
     container_name: nzbget
-    hostname: nzbget
     volumes:
       - ${CONFIG}/nzbget:/config
       - ${DOWNLOAD}:/downloads
       - ${DOWNLOAD}/watch:/watch
+    depends_on:
+      - vpn
     environment:
       - PGID=${PGID}
       - PUID=${PUID}
       - TZ=${TZ}
-#    network_mode: "service:vpn"
+    network_mode: service:vpn
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.nzbget.rule=Host(`nzbget.${DOMAIN}`)"
@@ -51,15 +52,19 @@ services:
       - "traefik.http.routers.nzbget.middlewares=security@file"
       - "traefik.http.services.nzbget.loadbalancer.server.port=6789"
     restart: unless-stopped
-
+    
   sonarr:
-    image: linuxserver/sonarr:latest
+    image: linuxserver/sonarr:preview
     container_name: sonarr
     hostname: sonarr
     ports:
       - "8989:8989"
     volumes:
-      - ${CONFIG}/sonarr:/config
+      - ${CONFIG}/sonarr/config.xml:/config/config.xml
+      - ${CONFIG}/sonarr/sonarr.db:/config/sonarr.db
+      - ${CONFIG}/sonarr/Backups:/config/Backups
+      - ${CONFIG}/sonarr/MediaCover:/config/MediaCover
+      - ${CONFIG}/sonarr/logs:/config/logs
       - ${DOWNLOAD}:/downloads
       - ${DATA}/tv:/tv
       - ${DATA}/anime:/anime
@@ -67,12 +72,17 @@ services:
       - PGID=${PGID}
       - PUID=${PUID}
       - TZ=${TZ}
+      - UMASK_SET=022
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.sonarr.rule=Host(`sonarr.${DOMAIN}`)"
       - "traefik.http.routers.sonarr.entrypoints=websecure"
       - "traefik.http.routers.sonarr.tls=true"
       - "traefik.http.routers.sonarr.middlewares=security@file"
+      - "traefik.http.routers.sonarrcal.rule=Host(`sonarr.${DOMAIN}`) && PathPrefix(`/feed/calendar/`)"
+      - "traefik.http.routers.sonarrcal.tls=true"
+      - "traefik.http.routers.sonarrcal.entrypoints=websecure"
+      - "traefik.http.routers.sonarrcal.middlewares=noauth@file"
     restart: unless-stopped
 
   radarr:
@@ -82,13 +92,18 @@ services:
     ports:
       - "7878:7878"
     volumes:
-      - ${CONFIG}/radarr:/config
+      - ${CONFIG}/radarr/config.xml:/config/config.xml
+      - ${CONFIG}/radarr/nzbdrone.db:/config/nzbdrone.db
+      - ${CONFIG}/radarr/Backups:/config/Backups
+      - ${CONFIG}/radarr/MediaCover:/config/MediaCover
+      - ${CONFIG}/radarr/logs:/config/logs
       - ${DOWNLOAD}:/downloads
       - ${DATA}/movies:/movies
     environment:
       - PGID=${PGID}
       - PUID=${PUID}
       - TZ=${TZ}
+      - UMASK_SET=022
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.radarr.rule=Host(`radarr.${DOMAIN}`)"
@@ -100,12 +115,12 @@ services:
   nzbhydra:
     image: linuxserver/hydra2:latest
     container_name: nzbhydra
-    hostname: nzbhydra
-    ports:
-      - "5076:5076"
+    network_mode: service:vpn
     volumes:
       - ${CONFIG}/nzbhydra2:/config
       - ${DOWNLOAD}/complete:/downloads
+    depends_on:
+      - vpn
     environment:
       - PGID=${PGID}
       - PUID=${PUID}
@@ -116,6 +131,7 @@ services:
       - "traefik.http.routers.nzbhydra.entrypoints=websecure"
       - "traefik.http.routers.nzbhydra.tls=true"
       - "traefik.http.routers.nzbhydra.middlewares=security@file"
+      - "traefik.http.services.nzbhydra.loadbalancer.server.port=5076"
     restart: unless-stopped
 
   plex:
@@ -180,15 +196,11 @@ services:
       WHITELIST: "sloop120@gmail.com,jenna.kessell@gmail.com"
       LOG_LEVEL: info
       LIFETIME: 2592000 # 30 days
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.services.oauth.loadbalancer.server.port=4181"
-      - "traefik.http.routers.oauth.entrypoints=websecure"
-      - "traefik.http.routers.oauth.tls=true"
       
-  transmission:
+  vpn:
     image: sloop0/docker-transmission-openvpn-traefik:latest
-    container_name: transmission
+    container_name: vpn
+    hostname: vpn
     restart: always
     cap_add:
       - NET_ADMIN
@@ -196,9 +208,16 @@ services:
       - /dev/net/tun
     ports:
       - "9091:9091"
+      - "6789:6789"
+      - "5076:5076"
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     volumes:
-      - ${CONFIG}/vpn:/data
-      - ${CONFIG}/vpn/providers:/etc/openvpn
+      - ${DOWNLOAD}:/data
+      - ${CONFIG}/vpn/providers/ghostpath:/etc/openvpn/ghostpath
     environment:
       - PGID=${PGID}
       - PUID=${PUID}
@@ -207,17 +226,23 @@ services:
       - OPENVPN_USERNAME=${VPN_USER}
       - OPENVPN_PASSWORD=${VPN_PASSWORD}
       - OPENVPN_CONFIG=${VPN_CONFIG}
-      - OPENVPN_OPTS=--inactive 3600
-      - LOCAL_NETWORK=192.168.86.0/24
+      - OPENVPN_OPTS=--inactive 3600 --resolv-retry 10 
+      - LOCAL_NETWORK=192.168.86.0/24, 172.22.0/24
       - TRANSMISSION_WEB_UI=combustion
-#    labels:
-#      - traefik.enable=true
-#      - traefik.http.routers.transmission.entrypoints=websecure
-#      - traefik.http.routers.transmission.rule=Host(`transmission.${DOMAIN}`)
-#      - traefik.http.routers.transmission.middlewares=security@file
-#      - traefik.http.routers.transmission.tls=true
-#      - "traefik.http.services.transmission.loadbalancer.server.port=9091"
-
+      - TRANSMISSION_PEER_PORT=49550
+      - TRANSMISSION_PEER_LIMIT_PER_TORRENT=100
+      - TRANSMISSION_SPEED_LIMIT_DOWN=8000
+      - TRANSMISSION_SPEED_LIMIT_DOWN_ENABLED=true
+      - TRANSMISSION_SPEED_LIMIT_UP=2000
+      - TRANSMISSION_SPEED_LIMIT_UP_ENABLED=true
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.transmission.entrypoints=websecure
+      - traefik.http.routers.transmission.rule=Host(`transmission.${DOMAIN}`)
+      - traefik.http.routers.transmission.middlewares=security@file
+      - traefik.http.routers.transmission.tls=true
+      - traefik.http.services.transmission.loadbalancer.server.port=9091
+      
 networks:
   default:
     external:
