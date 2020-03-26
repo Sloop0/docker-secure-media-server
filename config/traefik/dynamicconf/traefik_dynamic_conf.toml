@@ -53,19 +53,16 @@
 	  permanent = true
   [http.routers]
 	[http.routers.pihole]
-	  entryPoints = ["websecure"]
 	  rule = "Host(`pihole.{{env "DOMAIN"}}`)"
 	  middlewares = ["security"]
 	  service = "pihole"
 	  [http.routers.pihole.tls]
 	[http.routers.wwwredirect]
-	  entryPoints = ["websecure"]
 	  rule = "Host(`www.{{env "DOMAIN"}}`)"
 	  middlewares = ["security", "wwwredirect"]
 	  service = "noop@internal"
 	  [http.routers.wwwredirect.tls]
 	[http.routers.authredirect]
-	  entryPoints = ["websecure"]
 	  rule = "Host(`auth.{{env "DOMAIN"}}`) && Path(`/`)"
 	  middlewares = ["security", "authredirect"]
 	  service = "noop@internal"

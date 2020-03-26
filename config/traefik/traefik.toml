@@ -7,8 +7,6 @@
 #  insecureSkipVerify = true
 
 [entryPoints]
-  [entryPoints.web]
-    address = ":80"
   [entryPoints.websecure]
     address = ":443"
     
