@@ -15,6 +15,9 @@ services:
       - ${CONFIG}/traefik/traefik.toml:/etc/traefik/traefik.toml
       - ${CONFIG}/traefik/certs/:/certs
       - ${CONFIG}/traefik/dynamicconf/:/dynamicconf
+    environment:
+      - DOMAIN
+      - PIHOLE_IP
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik.entrypoints=websecure"
@@ -202,7 +205,14 @@ services:
       WHITELIST: "sloop120@gmail.com,jenna.kessell@gmail.com"
       LOG_LEVEL: info
       LIFETIME: 2592000 # 30 days
+      AUTH_HOST: auth.${DOMAIN}
     labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth.entrypoints=websecure"
+      - "traefik.http.routers.auth.rule=Host(`auth.${DOMAIN}`)"
+      - "traefik.http.routers.auth.middlewares=security@file"
+      - "traefik.http.routers.auth.tls=true"
+      - "traefik.http.services.auth.loadbalancer.server.port=4181"
       - "com.centurylinklabs.watchtower.enable=true"
       
   vpn:
