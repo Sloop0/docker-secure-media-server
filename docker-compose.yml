@@ -8,8 +8,7 @@ services:
     container_name: traefik
     hostname: traefik
     ports:
-      - "2052:80"
-      - "2053:443"
+      - "443:443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ${CONFIG}/traefik/traefik.toml:/etc/traefik/traefik.toml

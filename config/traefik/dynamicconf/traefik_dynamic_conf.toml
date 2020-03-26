@@ -52,11 +52,6 @@
 	  replacement = "https://{{env "DOMAIN"}}"
 	  permanent = true
   [http.routers]
-    [http.routers.https-only]
-      entryPoints = ["web"]
-      middlewares = ["redirect", "whitelist", "oauth"]
-      rule = "HostRegexp(`{host:.+}`)"
-      service = "na"
 	[http.routers.pihole]
 	  entryPoints = ["websecure"]
 	  rule = "Host(`pihole.{{env "DOMAIN"}}`)"
@@ -67,18 +62,15 @@
 	  entryPoints = ["websecure"]
 	  rule = "Host(`www.{{env "DOMAIN"}}`)"
 	  middlewares = ["security", "wwwredirect"]
-	  service = "na"
+	  service = "noop@internal"
 	  [http.routers.wwwredirect.tls]
 	[http.routers.authredirect]
 	  entryPoints = ["websecure"]
 	  rule = "Host(`auth.{{env "DOMAIN"}}`) && Path(`/`)"
 	  middlewares = ["security", "authredirect"]
-	  service = "na"
+	  service = "noop@internal"
 	  [http.routers.authredirect.tls]
   [http.services]
-    [http.services.na.loadBalancer]
-      [[http.services.na.loadBalancer.servers]]
-        url = "http://127.0.0.1"
 	[http.services.pihole.loadBalancer]
 	  passHostHeader = true
 	  [[http.services.pihole.loadBalancer.servers]]
