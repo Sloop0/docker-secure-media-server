@@ -21,8 +21,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN}`)"
       - "traefik.http.routers.traefik.service=api@internal"
-      - "traefik.http.routers.traefik.tls=true"
-      - "traefik.http.routers.traefik.middlewares=security@file"
+      - "traefik.http.routers.traefik.middlewares=oauth@file"
       - "com.centurylinklabs.watchtower.enable=true"
 
   ddclient:
@@ -49,8 +48,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.sabnzbd.rule=Host(`sabnzbd.${DOMAIN}`)"
-      - "traefik.http.routers.sabnzbd.tls=true"
-      - "traefik.http.routers.sabnzbd.middlewares=security@file"
+      - "traefik.http.routers.sabnzbd.middlewares=oauth@file"
       - "traefik.http.services.sabnzbd.loadbalancer.server.port=8080"
       - "com.centurylinklabs.watchtower.enable=true"
     restart: unless-stopped
@@ -78,11 +76,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.sonarr.rule=Host(`sonarr.${DOMAIN}`)"
-      - "traefik.http.routers.sonarr.tls=true"
-      - "traefik.http.routers.sonarr.middlewares=security@file"
+      - "traefik.http.routers.sonarr.middlewares=oauth@file"
       - "traefik.http.routers.sonarrcal.rule=Host(`sonarr.${DOMAIN}`) && PathPrefix(`/feed/calendar/`)"
-      - "traefik.http.routers.sonarrcal.tls=true"
-      - "traefik.http.routers.sonarrcal.middlewares=noauth@file"
       - "com.centurylinklabs.watchtower.enable=true"
     restart: unless-stopped
 
@@ -108,8 +103,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.radarr.rule=Host(`radarr.${DOMAIN}`)"
-      - "traefik.http.routers.radarr.tls=true"
-      - "traefik.http.routers.radarr.middlewares=security@file"
+      - "traefik.http.routers.radarr.middlewares=oauth@file"
       - "com.centurylinklabs.watchtower.enable=true"
     restart: unless-stopped
     
@@ -129,8 +123,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.nzbhydra.rule=Host(`nzbhydra.${DOMAIN}`)"
-      - "traefik.http.routers.nzbhydra.tls=true"
-      - "traefik.http.routers.nzbhydra.middlewares=security@file"
+      - "traefik.http.routers.nzbhydra.middlewares=oauth@file"
       - "traefik.http.services.nzbhydra.loadbalancer.server.port=5076"
       - "com.centurylinklabs.watchtower.enable=true"
     restart: unless-stopped
@@ -160,8 +153,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.services.plex.loadbalancer.server.port=32400"
       - "traefik.http.routers.plex.rule=Host(`plex.${DOMAIN}`)"
-      - "traefik.http.routers.plex.tls=true"
-      - "traefik.http.routers.plex.middlewares=security@file"
+      - "traefik.http.routers.plex.middlewares=oauth@file"
     restart: unless-stopped
 
   heimdall:
@@ -177,8 +169,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.heimdall.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.heimdall.middlewares=security@file"
-      - "traefik.http.routers.heimdall.tls=true"
+      - "traefik.http.routers.heimdall.middlewares=oauth@file"
       - "com.centurylinklabs.watchtower.enable=true"
     restart: unless-stopped
 
@@ -200,8 +191,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.auth.rule=Host(`auth.${DOMAIN}`)"
-      - "traefik.http.routers.auth.middlewares=security@file"
-      - "traefik.http.routers.auth.tls=true"
+      - "traefik.http.routers.auth.middlewares=oauth@file"
       - "traefik.http.services.auth.loadbalancer.server.port=4181"
       - "com.centurylinklabs.watchtower.enable=true"
       
@@ -245,8 +235,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.transmission.rule=Host(`transmission.${DOMAIN}`)"
-      - "traefik.http.routers.transmission.middlewares=security@file"
-      - "traefik.http.routers.transmission.tls=true"
+      - "traefik.http.routers.transmission.middlewares=oauth@file"
       - "traefik.http.services.transmission.loadbalancer.server.port=9091"
       - "com.centurylinklabs.watchtower.enable=true"
       

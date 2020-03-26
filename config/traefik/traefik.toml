@@ -1,5 +1,5 @@
 [log]
-  level = "ERROR"
+  level = "DEBUG"
 
 #[accessLog]
   
@@ -9,6 +9,9 @@
 [entryPoints]
   [entryPoints.websecure]
     address = ":443"
+	  [entryPoints.websecure.http.tls]
+	[entryPoints.websecure.http]
+	  middlewares = ["whitelist@file", "headers@file"]
     
 [api]
   dashboard = true

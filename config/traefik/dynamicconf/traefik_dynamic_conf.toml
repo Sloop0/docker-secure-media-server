@@ -39,10 +39,6 @@
       stsIncludeSubdomains = true
 	  [http.middlewares.headers.headers.customRequestHeaders]
 	    X-Forwarded-Proto = "https"
-    [http.middlewares.security.chain]
-	  middlewares = ["whitelist", "oauth","headers"]
-	[http.middlewares.noauth.chain]
-	  middlewares = ["whitelist", "headers"]
 	[http.middlewares.wwwredirect.redirectregex]
 	  regex = "^https?://(?:www\\.)?(.+)"
 	  replacement = "https://${1}"
@@ -54,19 +50,16 @@
   [http.routers]
 	[http.routers.pihole]
 	  rule = "Host(`pihole.{{env "DOMAIN"}}`)"
-	  middlewares = ["security"]
+	  middlewares = ["oauth"]
 	  service = "pihole"
-	  [http.routers.pihole.tls]
 	[http.routers.wwwredirect]
 	  rule = "Host(`www.{{env "DOMAIN"}}`)"
-	  middlewares = ["security", "wwwredirect"]
+	  middlewares = ["oauth", "wwwredirect"]
 	  service = "noop@internal"
-	  [http.routers.wwwredirect.tls]
 	[http.routers.authredirect]
 	  rule = "Host(`auth.{{env "DOMAIN"}}`) && Path(`/`)"
-	  middlewares = ["security", "authredirect"]
+	  middlewares = ["oauth", "authredirect"]
 	  service = "noop@internal"
-	  [http.routers.authredirect.tls]
   [http.services]
 	[http.services.pihole.loadBalancer]
 	  passHostHeader = true
