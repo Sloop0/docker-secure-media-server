@@ -12,3 +12,4 @@ sonarr/
 vpn/
 config/traefik/certs/
 sabnzbd/
+config/traefik/dynamicconf/extradynamicconf.toml
