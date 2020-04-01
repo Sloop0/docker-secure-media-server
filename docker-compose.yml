@@ -220,6 +220,21 @@ services:
       - "traefik.http.services.auth.loadbalancer.server.port=4181"
       - "com.centurylinklabs.watchtower.enable=true"
       
+  filebrowser:
+    image: filebrowser/filebrowser:latest
+    container_name: filebrowser
+    hostname: filebrowser
+    command: --noauth
+    volumes:
+      - /:/srv
+    expose:
+      - "80"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.filebrowser.rule=Host(`filebrowser.${DOMAIN}`)"
+      - "traefik.http.routers.filebrowser.middlewares=oauth@file"
+    restart: unless-stopped
+    
   vpn:
     image: sloop0/docker-transmission-openvpn-traefik:latest
     container_name: vpn
@@ -239,6 +254,7 @@ services:
       - 8.8.8.8
       - 8.8.4.4
     volumes:
+      - /dev/net/tun:/dev/net/tun
       - ${DOWNLOAD}:/data
       - ${CONFIG}/vpn/providers/ghostpath:/etc/openvpn/ghostpath
     environment:
